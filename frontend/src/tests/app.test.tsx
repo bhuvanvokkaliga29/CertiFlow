@@ -1,8 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
-import '@testing-library/jest-dom';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
+import { MemoryRouter } from 'react-router-dom';
 import { LandingPage } from '../pages/LandingPage';
 import { LoginPage } from '../pages/LoginPage';
 import { AuthProvider } from '../context/AuthContext';
@@ -34,7 +33,7 @@ const renderWithProviders = (ui: React.ReactElement) => {
   return render(
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>{ui}</BrowserRouter>
+        <MemoryRouter>{ui}</MemoryRouter>
       </AuthProvider>
     </QueryClientProvider>
   );

@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 
 // Mock window.URL methods for JSDOM
 if (typeof window !== 'undefined') {
