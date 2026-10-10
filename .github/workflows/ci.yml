@@ -60,7 +60,7 @@ jobs:
       - name: Run Frontend Tests
         working-directory: ./frontend
         run: |
-          npm test
+          npm test 2>&1 | tee test_output.log || (echo "### Vitest Failure Output" >> $GITHUB_STEP_SUMMARY && echo '```' >> $GITHUB_STEP_SUMMARY && cat test_output.log >> $GITHUB_STEP_SUMMARY && echo '```' >> $GITHUB_STEP_SUMMARY && exit 1)
 
       - name: Run Production Build
         working-directory: ./frontend
