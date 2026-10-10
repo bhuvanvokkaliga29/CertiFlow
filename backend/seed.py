@@ -1,16 +1,15 @@
 """Database seed script for demo data and rapid testing."""
 
 import asyncio
-import os
 import uuid
-from datetime import datetime, timezone
 
 from sqlalchemy import select
+
 from app.core.database import AsyncSessionLocal, create_tables
 from app.core.security import get_password_hash
-from app.models.models import User, Organization, OrganizationMember, AccountStatus, UserRole
-from app.services.job_service import create_generation_job
+from app.models.models import AccountStatus, Organization, OrganizationMember, User, UserRole
 from app.schemas.jobs import CreateJobRequest, RecipientInput
+from app.services.job_service import create_generation_job
 
 DEMO_USER_EMAIL = "organizer@certiflow.local"
 DEMO_USER_PASSWORD = "password123"

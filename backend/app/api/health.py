@@ -1,8 +1,9 @@
 """Health check endpoints — liveness and readiness."""
 
-from fastapi import APIRouter
-from app.core.database import check_db_connection
 import structlog
+from fastapi import APIRouter
+
+from app.core.database import check_db_connection
 
 logger = structlog.get_logger(__name__)
 health_router = APIRouter(prefix="/health", tags=["Health"])
@@ -22,6 +23,7 @@ async def readiness():
     redis_ok = False
     try:
         import redis
+
         from app.core.config import settings
         r = redis.from_url(settings.REDIS_URL, socket_connect_timeout=1)
         r.ping()

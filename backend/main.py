@@ -1,15 +1,15 @@
 """CertiFlow Backend - Main application entry point."""
 
+import structlog
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-import structlog
 
-from app.core.config import settings
-from app.core.logging import configure_logging
-from app.core.exceptions import CertiFlowException
-from app.api.v1.router import api_router
 from app.api.health import health_router
+from app.api.v1.router import api_router
+from app.core.config import settings
+from app.core.exceptions import CertiFlowException
+from app.core.logging import configure_logging
 
 configure_logging()
 logger = structlog.get_logger(__name__)

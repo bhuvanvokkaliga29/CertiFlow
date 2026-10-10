@@ -16,13 +16,13 @@ Covers:
 
 import asyncio
 import io
+import os
 import zipfile
+
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
-
-import os
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 
 # Use SQLite file for tests so background thread can share the database
 TEST_DB_PATH = os.path.abspath("./test_certiflow.db")

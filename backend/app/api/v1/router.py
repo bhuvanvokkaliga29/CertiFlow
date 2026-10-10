@@ -1,11 +1,12 @@
 """API v1 router — aggregates all sub-routers."""
 
 from fastapi import APIRouter
-from app.api.v1.auth import router as auth_router
-from app.api.v1.jobs import router as jobs_router
-from app.api.v1.certificates import router as certs_router
-from app.api.v1.verify import router as verify_router
+
 from app.api.v1.audit import router as audit_router
+from app.api.v1.auth import router as auth_router
+from app.api.v1.certificates import router as certs_router
+from app.api.v1.jobs import router as jobs_router
+from app.api.v1.verify import router as verify_router
 
 api_router = APIRouter()
 

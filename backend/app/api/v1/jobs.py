@@ -1,30 +1,34 @@
 """Jobs API endpoints."""
 
-import json
-from typing import Optional
-from fastapi import APIRouter, Header, HTTPException, Query, UploadFile, File, status
-from sqlalchemy import select, func
-from sqlalchemy.ext.asyncio import AsyncSession
-import structlog
 
-from app.api.dependencies import CurrentUser, CurrentOrg, DBSession
+import structlog
+from fastapi import APIRouter, File, Header, HTTPException, Query, UploadFile, status
+from sqlalchemy import func, select
+
+from app.api.dependencies import CurrentOrg, CurrentUser, DBSession
 from app.core.config import settings
-from app.core.exceptions import NotFoundError, AuthorizationError
 from app.models.models import (
-    GenerationJob, Recipient, Certificate, AuditEvent, AuditAction,
-    JobStatus, RecipientStatus,
+    Certificate,
+    GenerationJob,
+    JobStatus,
+    Recipient,
+    RecipientStatus,
 )
 from app.schemas.jobs import (
-    CreateJobRequest, CreateJobResponse, JobStatusResponse,
-    RecipientResponse, PaginatedRecipientsResponse,
-    CertificateResponse, DashboardStatsResponse,
+    CertificateResponse,
+    CreateJobRequest,
+    CreateJobResponse,
     CSVValidationResult,
-)
-from app.services.job_service import (
-    create_generation_job, get_job_with_auth, retry_failed_recipients
+    JobStatusResponse,
+    PaginatedRecipientsResponse,
+    RecipientResponse,
 )
 from app.services.csv_service import parse_and_validate_csv
-from app.services.audit_service import log_audit_event
+from app.services.job_service import (
+    create_generation_job,
+    get_job_with_auth,
+    retry_failed_recipients,
+)
 
 logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/jobs", tags=["Jobs"])
@@ -62,7 +66,7 @@ async def create_job(
     current_user: CurrentUser,
     current_org: CurrentOrg,
     db: DBSession,
-    idempotency_key: Optional[str] = Header(None, alias="Idempotency-Key"),
+    idempotency_key: str | None = Header(None, alias="Idempotency-Key"),
 ):
     """Create a new bulk certificate generation job.
 
@@ -127,7 +131,7 @@ async def list_jobs(
     current_user: CurrentUser,
     current_org: CurrentOrg,
     db: DBSession,
-    status_filter: Optional[str] = Query(None, alias="status"),
+    status_filter: str | None = Query(None, alias="status"),
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
 ):
@@ -166,8 +170,8 @@ async def get_recipients(
     current_user: CurrentUser,
     current_org: CurrentOrg,
     db: DBSession,
-    status_filter: Optional[str] = Query(None, alias="status"),
-    search: Optional[str] = Query(None),
+    status_filter: str | None = Query(None, alias="status"),
+    search: str | None = Query(None),
     page: int = Query(1, ge=1),
     per_page: int = Query(20, ge=1, le=100),
 ):
@@ -285,6 +289,7 @@ async def download_job_zip(
 ):
     """Download all certificates for a job as a ZIP archive."""
     from fastapi.responses import Response
+
     from app.services.storage import build_zip_archive
 
     await get_job_with_auth(db, job_id, current_org.id)
@@ -322,6 +327,7 @@ async def download_job_csv_report(
 ):
     """Download a CSV report of job results."""
     from fastapi.responses import Response
+
     from app.services.csv_service import export_job_csv_report
 
     await get_job_with_auth(db, job_id, current_org.id)

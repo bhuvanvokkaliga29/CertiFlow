@@ -10,22 +10,25 @@ This service is the heart of CertiFlow:
 import hashlib
 import json
 import uuid
-from datetime import datetime, timezone
-from typing import List, Optional
+from datetime import UTC, datetime
 
-from sqlalchemy import select, func, update
-from sqlalchemy.ext.asyncio import AsyncSession
 import structlog
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.core.exceptions import (
-    NotFoundError, AuthorizationError, JobStateError, ConflictError
-)
+from app.core.exceptions import AuthorizationError, ConflictError, JobStateError, NotFoundError
 from app.models.models import (
-    GenerationJob, Recipient, Certificate, IdempotencyRecord,
-    JobStatus, RecipientStatus, AuditAction, Organization
+    AuditAction,
+    Certificate,
+    GenerationJob,
+    IdempotencyRecord,
+    JobStatus,
+    Organization,
+    Recipient,
+    RecipientStatus,
 )
-from app.schemas.jobs import CreateJobRequest, RecipientInput
+from app.schemas.jobs import CreateJobRequest
 from app.services.audit_service import log_audit_event
 
 logger = structlog.get_logger(__name__)
@@ -67,7 +70,7 @@ async def check_idempotency(
     idempotency_key: str,
     organization_id: str,
     fingerprint: str,
-) -> Optional[GenerationJob]:
+) -> GenerationJob | None:
     """Check if this idempotency key has been used before.
 
     Returns:
@@ -106,7 +109,7 @@ async def create_generation_job(
     request: CreateJobRequest,
     user_id: str,
     organization_id: str,
-    idempotency_key: Optional[str] = None,
+    idempotency_key: str | None = None,
 ) -> GenerationJob:
     """Create a new generation job with all recipients in one transaction.
 
@@ -245,8 +248,6 @@ def _run_job_in_thread(job_id: str) -> None:
 async def _process_job_async(job_id: str) -> None:
     """Process all recipients for a job. Core generation logic."""
     from app.core.database import AsyncSessionLocal
-    from app.services.certificate_renderer import render_certificate_pdf, compute_sha256
-    from app.services.storage import build_storage_key, write_certificate
 
     async with AsyncSessionLocal() as db:
         try:
@@ -264,7 +265,7 @@ async def _process_job_async(job_id: str) -> None:
                 return
 
             job.status = JobStatus.PROCESSING
-            job.started_at = datetime.now(timezone.utc)
+            job.started_at = datetime.now(UTC)
             await db.commit()
 
             # Fetch all PENDING recipients
@@ -294,7 +295,7 @@ async def _process_job_async(job_id: str) -> None:
                     err_job = err_result.scalar_one_or_none()
                     if err_job:
                         err_job.status = JobStatus.FAILED
-                        err_job.completed_at = datetime.now(timezone.utc)
+                        err_job.completed_at = datetime.now(UTC)
                         await err_db.commit()
             except Exception:
                 pass
@@ -307,14 +308,13 @@ async def _process_recipient(
     verification_base: str,
 ) -> None:
     """Process a single recipient — isolated failure handling."""
-    from app.core.database import AsyncSessionLocal
-    from app.services.certificate_renderer import render_certificate_pdf, compute_sha256
+    from app.services.certificate_renderer import compute_sha256, render_certificate_pdf
     from app.services.storage import build_storage_key, write_certificate
 
     try:
         # Mark PROCESSING
         recipient.status = RecipientStatus.PROCESSING
-        recipient.started_at = datetime.now(timezone.utc)
+        recipient.started_at = datetime.now(UTC)
         await db.commit()
 
         # Generate a stable public_id for QR/verification
@@ -353,7 +353,7 @@ async def _process_recipient(
 
         # Update recipient
         recipient.status = RecipientStatus.SUCCEEDED
-        recipient.completed_at = datetime.now(timezone.utc)
+        recipient.completed_at = datetime.now(UTC)
 
         # Update job counters
         job.pending_count = max(0, job.pending_count - 1)
@@ -373,7 +373,7 @@ async def _process_recipient(
             recipient.status = RecipientStatus.FAILED
             recipient.error_code = type(e).__name__
             recipient.error_message = str(e)[:900]
-            recipient.completed_at = datetime.now(timezone.utc)
+            recipient.completed_at = datetime.now(UTC)
             job.pending_count = max(0, job.pending_count - 1)
             job.failed_count += 1
             await db.commit()
@@ -383,7 +383,7 @@ async def _process_recipient(
 
 async def _finalize_job(db: AsyncSession, job: GenerationJob) -> None:
     """Determine final job status after all recipients processed."""
-    job.completed_at = datetime.now(timezone.utc)
+    job.completed_at = datetime.now(UTC)
 
     if job.failed_count == 0:
         job.status = JobStatus.COMPLETED

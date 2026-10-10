@@ -8,12 +8,19 @@ All entities:
 
 import enum
 import uuid
-from datetime import datetime, timezone
-from typing import List, Optional
+from datetime import UTC, datetime
+from typing import Optional
 
 from sqlalchemy import (
-    Boolean, DateTime, Enum, ForeignKey, Index, Integer,
-    String, Text, UniqueConstraint, func,
+    Boolean,
+    DateTime,
+    Enum,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -21,7 +28,7 @@ from app.core.database import Base
 
 
 def utcnow() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 def new_uuid() -> str:
@@ -95,10 +102,10 @@ class User(Base):
     )
 
     # Relationships
-    memberships: Mapped[List["OrganizationMember"]] = relationship(
+    memberships: Mapped[list["OrganizationMember"]] = relationship(
         "OrganizationMember", back_populates="user", cascade="all, delete-orphan"
     )
-    audit_events: Mapped[List["AuditEvent"]] = relationship(
+    audit_events: Mapped[list["AuditEvent"]] = relationship(
         "AuditEvent", back_populates="actor", foreign_keys="AuditEvent.actor_id"
     )
 
@@ -119,10 +126,10 @@ class Organization(Base):
     )
 
     # Relationships
-    members: Mapped[List["OrganizationMember"]] = relationship(
+    members: Mapped[list["OrganizationMember"]] = relationship(
         "OrganizationMember", back_populates="organization", cascade="all, delete-orphan"
     )
-    jobs: Mapped[List["GenerationJob"]] = relationship(
+    jobs: Mapped[list["GenerationJob"]] = relationship(
         "GenerationJob", back_populates="organization"
     )
 
@@ -169,7 +176,7 @@ class GenerationJob(Base):
     achievement_description: Mapped[str] = mapped_column(String(500), nullable=False)
     issue_date: Mapped[str] = mapped_column(String(20), nullable=False)  # ISO date string
     signatory_name: Mapped[str] = mapped_column(String(200), nullable=False)
-    signatory_title: Mapped[Optional[str]] = mapped_column(String(200), nullable=True)
+    signatory_title: Mapped[str | None] = mapped_column(String(200), nullable=True)
 
     # Status
     status: Mapped[JobStatus] = mapped_column(
@@ -184,8 +191,8 @@ class GenerationJob(Base):
     failed_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
 
     # Timestamps
-    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
@@ -194,7 +201,7 @@ class GenerationJob(Base):
     # Relationships
     organization: Mapped["Organization"] = relationship("Organization", back_populates="jobs")
     created_by: Mapped["User"] = relationship("User", foreign_keys=[created_by_id])
-    recipients: Mapped[List["Recipient"]] = relationship(
+    recipients: Mapped[list["Recipient"]] = relationship(
         "Recipient", back_populates="job", cascade="all, delete-orphan"
     )
 
@@ -224,9 +231,9 @@ class Recipient(Base):
     )
 
     full_name: Mapped[str] = mapped_column(String(300), nullable=False)
-    email: Mapped[Optional[str]] = mapped_column(String(320), nullable=True)
-    institution: Mapped[Optional[str]] = mapped_column(String(300), nullable=True)
-    achievement: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+    email: Mapped[str | None] = mapped_column(String(320), nullable=True)
+    institution: Mapped[str | None] = mapped_column(String(300), nullable=True)
+    achievement: Mapped[str | None] = mapped_column(String(500), nullable=True)
 
     status: Mapped[RecipientStatus] = mapped_column(
         Enum(RecipientStatus, native_enum=False),
@@ -235,11 +242,11 @@ class Recipient(Base):
         index=True,
     )
     retry_count: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    error_code: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    error_message: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
+    error_code: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    error_message: Mapped[str | None] = mapped_column(String(1000), nullable=True)
 
-    started_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    completed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, onupdate=utcnow
@@ -276,13 +283,13 @@ class Certificate(Base):
 
     # Storage
     storage_key: Mapped[str] = mapped_column(String(500), nullable=False)
-    file_checksum: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)  # SHA-256 hex
+    file_checksum: Mapped[str | None] = mapped_column(String(64), nullable=True)  # SHA-256 hex
 
     # Lifecycle
     is_revoked: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
-    revocation_reason: Mapped[Optional[str]] = mapped_column(String(1000), nullable=True)
-    revoked_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
-    revoked_by_id: Mapped[Optional[str]] = mapped_column(
+    revocation_reason: Mapped[str | None] = mapped_column(String(1000), nullable=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    revoked_by_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
 
@@ -305,21 +312,21 @@ class AuditEvent(Base):
     __tablename__ = "audit_events"
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=new_uuid)
-    organization_id: Mapped[Optional[str]] = mapped_column(
+    organization_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("organizations.id", ondelete="SET NULL"), nullable=True, index=True
     )
-    actor_id: Mapped[Optional[str]] = mapped_column(
+    actor_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
-    actor_email: Mapped[Optional[str]] = mapped_column(String(320), nullable=True)
+    actor_email: Mapped[str | None] = mapped_column(String(320), nullable=True)
 
     action: Mapped[AuditAction] = mapped_column(
         Enum(AuditAction, native_enum=False), nullable=False, index=True
     )
-    resource_type: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
-    resource_id: Mapped[Optional[str]] = mapped_column(String(36), nullable=True)
+    resource_type: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    resource_id: Mapped[str | None] = mapped_column(String(36), nullable=True)
     outcome: Mapped[str] = mapped_column(String(50), nullable=False, default="success")
-    metadata_json: Mapped[Optional[str]] = mapped_column(Text, nullable=True)  # sanitized JSON
+    metadata_json: Mapped[str | None] = mapped_column(Text, nullable=True)  # sanitized JSON
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utcnow, index=True
@@ -346,7 +353,7 @@ class IdempotencyRecord(Base):
     idempotency_key: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
     organization_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
     request_fingerprint: Mapped[str] = mapped_column(String(64), nullable=False)  # SHA-256
-    job_id: Mapped[Optional[str]] = mapped_column(
+    job_id: Mapped[str | None] = mapped_column(
         String(36), ForeignKey("generation_jobs.id", ondelete="SET NULL"), nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)

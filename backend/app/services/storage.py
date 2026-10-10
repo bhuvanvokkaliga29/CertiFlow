@@ -1,11 +1,10 @@
 """File storage abstraction for certificate PDFs and uploads."""
 
+import io
 import os
 import re
-import uuid
 import zipfile
-import io
-from typing import Optional
+
 import structlog
 
 from app.core.config import settings

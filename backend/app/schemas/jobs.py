@@ -1,10 +1,10 @@
 """Pydantic schemas for job creation and status."""
 
-from datetime import date
-from typing import List, Optional, Any
-from pydantic import BaseModel, EmailStr, field_validator, ConfigDict, model_validator
 import re
+from datetime import date
+from typing import Any
 
+from pydantic import BaseModel, ConfigDict, field_validator
 
 # ---------------------------------------------------------------------------
 # Recipient Input
@@ -12,9 +12,9 @@ import re
 
 class RecipientInput(BaseModel):
     full_name: str
-    email: Optional[str] = None
-    institution: Optional[str] = None
-    achievement: Optional[str] = None
+    email: str | None = None
+    institution: str | None = None
+    achievement: str | None = None
 
     @field_validator("full_name")
     @classmethod
@@ -28,7 +28,7 @@ class RecipientInput(BaseModel):
 
     @field_validator("email")
     @classmethod
-    def validate_email(cls, v: Optional[str]) -> Optional[str]:
+    def validate_email(cls, v: str | None) -> str | None:
         if v is None or v.strip() == "":
             return None
         v = v.strip().lower()
@@ -40,7 +40,7 @@ class RecipientInput(BaseModel):
 
     @field_validator("institution")
     @classmethod
-    def validate_institution(cls, v: Optional[str]) -> Optional[str]:
+    def validate_institution(cls, v: str | None) -> str | None:
         if v is None:
             return None
         v = v.strip()
@@ -50,7 +50,7 @@ class RecipientInput(BaseModel):
 
     @field_validator("achievement")
     @classmethod
-    def validate_achievement(cls, v: Optional[str]) -> Optional[str]:
+    def validate_achievement(cls, v: str | None) -> str | None:
         if v is None:
             return None
         v = v.strip()
@@ -69,8 +69,8 @@ class CreateJobRequest(BaseModel):
     issue_date: str  # ISO date YYYY-MM-DD
     achievement_description: str
     signatory_name: str
-    signatory_title: Optional[str] = None
-    recipients: List[RecipientInput]
+    signatory_title: str | None = None
+    recipients: list[RecipientInput]
 
     @field_validator("event_name")
     @classmethod
@@ -123,7 +123,7 @@ class CreateJobRequest(BaseModel):
 
     @field_validator("recipients")
     @classmethod
-    def validate_recipients(cls, v: List[RecipientInput]) -> List[RecipientInput]:
+    def validate_recipients(cls, v: list[RecipientInput]) -> list[RecipientInput]:
         from app.core.config import settings
         if not v:
             raise ValueError("At least one recipient is required")
@@ -148,7 +148,7 @@ class JobStatusResponse(BaseModel):
     achievement_description: str
     issue_date: str
     signatory_name: str
-    signatory_title: Optional[str]
+    signatory_title: str | None
     status: str
     total_count: int
     pending_count: int
@@ -156,11 +156,11 @@ class JobStatusResponse(BaseModel):
     success_count: int
     failed_count: int
     completion_percentage: float
-    started_at: Optional[Any]
-    completed_at: Optional[Any]
+    started_at: Any | None
+    completed_at: Any | None
     created_at: Any
     updated_at: Any
-    job_url: Optional[str] = None
+    job_url: str | None = None
 
 
 class CreateJobResponse(BaseModel):
@@ -182,20 +182,20 @@ class RecipientResponse(BaseModel):
     id: str
     job_id: str
     full_name: str
-    email: Optional[str]
-    institution: Optional[str]
-    achievement: Optional[str]
+    email: str | None
+    institution: str | None
+    achievement: str | None
     status: str
     retry_count: int
-    error_code: Optional[str]
-    error_message: Optional[str]
-    started_at: Optional[Any]
-    completed_at: Optional[Any]
+    error_code: str | None
+    error_message: str | None
+    started_at: Any | None
+    completed_at: Any | None
     created_at: Any
 
 
 class PaginatedRecipientsResponse(BaseModel):
-    items: List[RecipientResponse]
+    items: list[RecipientResponse]
     total: int
     page: int
     per_page: int
@@ -213,18 +213,18 @@ class CertificateResponse(BaseModel):
     public_id: str
     recipient_id: str
     recipient_name: str
-    recipient_email: Optional[str] = None
-    event_name: Optional[str] = None
-    issuer_name: Optional[str] = None
-    achievement: Optional[str] = None
-    pdf_sha256: Optional[str] = None
+    recipient_email: str | None = None
+    event_name: str | None = None
+    issuer_name: str | None = None
+    achievement: str | None = None
+    pdf_sha256: str | None = None
     is_valid: bool = True
     is_revoked: bool = False
-    revocation_reason: Optional[str]
-    revoked_at: Optional[Any]
+    revocation_reason: str | None
+    revoked_at: Any | None
     issued_at: Any
-    download_url: Optional[str] = None
-    verification_url: Optional[str] = None
+    download_url: str | None = None
+    verification_url: str | None = None
 
 
 class VerifyResponse(BaseModel):
@@ -235,11 +235,11 @@ class VerifyResponse(BaseModel):
     holder_name: str
     issuing_organization: str
     event_name: str
-    achievement: Optional[str]
+    achievement: str | None
     issue_date: str
     issued_at: Any
-    revocation_reason: Optional[str] = None
-    revoked_at: Optional[Any] = None
+    revocation_reason: str | None = None
+    revoked_at: Any | None = None
 
 
 class RevokeRequest(BaseModel):
@@ -265,11 +265,11 @@ class CSVValidationResult(BaseModel):
     valid_rows: int
     invalid_rows: int
     duplicate_rows: int
-    errors: List[dict]
-    preview: List[dict]
+    errors: list[dict]
+    preview: list[dict]
     column_mapping: dict
-    valid_recipients: List[dict] = []
-    session_token: Optional[str] = None
+    valid_recipients: list[dict] = []
+    session_token: str | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -281,16 +281,16 @@ class AuditEventResponse(BaseModel):
 
     id: str
     action: str
-    actor_email: Optional[str]
-    resource_type: Optional[str]
-    resource_id: Optional[str]
+    actor_email: str | None
+    resource_type: str | None
+    resource_id: str | None
     outcome: str
-    metadata_json: Optional[str]
+    metadata_json: str | None
     created_at: Any
 
 
 class PaginatedAuditResponse(BaseModel):
-    items: List[AuditEventResponse]
+    items: list[AuditEventResponse]
     total: int
     page: int
     per_page: int
@@ -307,4 +307,4 @@ class DashboardStatsResponse(BaseModel):
     successful_certificates: int
     failed_generations: int
     success_rate: float
-    recent_jobs: List[JobStatusResponse]
+    recent_jobs: list[JobStatusResponse]

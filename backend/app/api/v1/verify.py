@@ -1,11 +1,11 @@
 """Verification API endpoint (public)."""
 
+import structlog
 from fastapi import APIRouter, HTTPException
 from sqlalchemy import select
-import structlog
 
 from app.api.dependencies import DBSession
-from app.models.models import Certificate, Recipient, GenerationJob
+from app.models.models import Certificate, GenerationJob, Recipient
 from app.schemas.jobs import VerifyResponse
 
 logger = structlog.get_logger(__name__)

@@ -30,6 +30,7 @@ try:
     def process_generation_job(self, job_id: str):
         """Celery task to process a generation job asynchronously."""
         import asyncio
+
         from app.services.job_service import _process_job_async
 
         loop = asyncio.new_event_loop()

@@ -1,8 +1,8 @@
 """Pydantic schemas for authentication endpoints."""
 
-from pydantic import BaseModel, EmailStr, field_validator, ConfigDict
 import re
 
+from pydantic import BaseModel, ConfigDict, field_validator
 
 EMAIL_REGEX = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 

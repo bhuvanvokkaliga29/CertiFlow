@@ -1,17 +1,17 @@
 """Authentication API endpoints."""
 
-import uuid
 import re
-from fastapi import APIRouter, HTTPException, status, Depends
-from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
+import uuid
+
 import structlog
+from fastapi import APIRouter, HTTPException, status
+from sqlalchemy import select
 
 from app.api.dependencies import CurrentUser, DBSession
 from app.core.config import settings
-from app.core.security import get_password_hash, verify_password, create_access_token
-from app.models.models import User, Organization, OrganizationMember, AuditAction, AccountStatus
-from app.schemas.auth import RegisterRequest, LoginRequest, TokenResponse, UserResponse
+from app.core.security import create_access_token, get_password_hash, verify_password
+from app.models.models import AccountStatus, AuditAction, Organization, OrganizationMember, User
+from app.schemas.auth import LoginRequest, RegisterRequest, TokenResponse, UserResponse
 from app.services.audit_service import log_audit_event
 
 logger = structlog.get_logger(__name__)

@@ -3,8 +3,7 @@
 import csv
 import io
 import re
-import json
-from typing import Any, Dict, List, Optional, Tuple
+
 import structlog
 
 from app.core.config import settings
@@ -17,7 +16,7 @@ OPTIONAL_COLUMNS = {"email", "institution", "achievement"}
 ALL_COLUMNS = REQUIRED_COLUMNS | OPTIONAL_COLUMNS
 
 # Common alternative column names → canonical names
-COLUMN_ALIASES: Dict[str, str] = {
+COLUMN_ALIASES: dict[str, str] = {
     "name": "full_name",
     "recipient_name": "full_name",
     "full name": "full_name",
@@ -54,13 +53,13 @@ def _normalize_header(header: str) -> str:
     return header.strip().lower().replace(" ", "_")
 
 
-def detect_column_mapping(headers: List[str]) -> Dict[str, Optional[str]]:
+def detect_column_mapping(headers: list[str]) -> dict[str, str | None]:
     """Map raw CSV headers to canonical field names.
 
     Returns a dict: {canonical_field: raw_header_or_None}
     """
     normalized = {_normalize_header(h): h for h in headers}
-    mapping: Dict[str, Optional[str]] = {}
+    mapping: dict[str, str | None] = {}
 
     for canon in ALL_COLUMNS:
         # Exact match
@@ -80,7 +79,7 @@ def detect_column_mapping(headers: List[str]) -> Dict[str, Optional[str]]:
 
 def parse_and_validate_csv(
     csv_bytes: bytes,
-    max_rows: Optional[int] = None,
+    max_rows: int | None = None,
 ) -> dict:
     """Parse and validate a CSV file for bulk certificate generation.
 

@@ -1,6 +1,6 @@
 """Custom exception classes for CertiFlow."""
 
-from typing import Any, Optional
+from typing import Any
 
 
 class CertiFlowException(Exception):
@@ -11,7 +11,7 @@ class CertiFlowException(Exception):
         message: str,
         error_code: str = "INTERNAL_ERROR",
         status_code: int = 500,
-        detail: Optional[Any] = None,
+        detail: Any | None = None,
     ):
         self.message = message
         self.error_code = error_code

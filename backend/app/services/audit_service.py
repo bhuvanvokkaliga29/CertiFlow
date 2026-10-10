@@ -1,11 +1,12 @@
 """Audit logging service."""
 
 import json
-from typing import Any, Dict, Optional
-from sqlalchemy.ext.asyncio import AsyncSession
-import structlog
+from typing import Any
 
-from app.models.models import AuditEvent, AuditAction
+import structlog
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.models.models import AuditAction, AuditEvent
 
 logger = structlog.get_logger(__name__)
 
@@ -13,13 +14,13 @@ logger = structlog.get_logger(__name__)
 async def log_audit_event(
     db: AsyncSession,
     action: AuditAction,
-    organization_id: Optional[str] = None,
-    actor_id: Optional[str] = None,
-    actor_email: Optional[str] = None,
-    resource_type: Optional[str] = None,
-    resource_id: Optional[str] = None,
+    organization_id: str | None = None,
+    actor_id: str | None = None,
+    actor_email: str | None = None,
+    resource_type: str | None = None,
+    resource_id: str | None = None,
     outcome: str = "success",
-    metadata: Optional[Dict[str, Any]] = None,
+    metadata: dict[str, Any] | None = None,
 ) -> AuditEvent:
     """Record an audit event.
 

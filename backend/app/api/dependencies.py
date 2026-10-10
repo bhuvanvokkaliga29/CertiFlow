@@ -1,15 +1,16 @@
 """FastAPI dependency injection utilities."""
 
-from typing import Annotated, Optional
-from fastapi import Depends, Header, HTTPException, status, Query
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from typing import Annotated
+
 import structlog
+from fastapi import Depends, HTTPException, Query, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.core.security import decode_access_token
-from app.models.models import User, Organization, OrganizationMember, AccountStatus
+from app.models.models import AccountStatus, Organization, OrganizationMember, User
 
 logger = structlog.get_logger(__name__)
 
@@ -18,7 +19,7 @@ security = HTTPBearer(auto_error=False)
 
 async def get_current_user(
     credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(security)],
-    token: Annotated[Optional[str], Query()] = None,
+    token: Annotated[str | None, Query()] = None,
     db: AsyncSession = Depends(get_db),
 ) -> User:
     """Extract and validate the current user from the Bearer token or token query param."""

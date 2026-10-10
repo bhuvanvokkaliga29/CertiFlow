@@ -1,9 +1,18 @@
 """Models package."""
 from app.models.models import (
-    User, Organization, OrganizationMember,
-    GenerationJob, Recipient, Certificate,
-    AuditEvent, IdempotencyRecord,
-    UserRole, AccountStatus, JobStatus, RecipientStatus, AuditAction,
+    AccountStatus,
+    AuditAction,
+    AuditEvent,
+    Certificate,
+    GenerationJob,
+    IdempotencyRecord,
+    JobStatus,
+    Organization,
+    OrganizationMember,
+    Recipient,
+    RecipientStatus,
+    User,
+    UserRole,
 )
 
 __all__ = [

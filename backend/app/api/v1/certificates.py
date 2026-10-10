@@ -1,15 +1,16 @@
 """Certificates API endpoints — download, verify, revoke."""
 
-from typing import List, Optional
-from fastapi import APIRouter, HTTPException, status, Query
+from datetime import UTC
+
+import structlog
+from fastapi import APIRouter, HTTPException, Query, status
 from fastapi.responses import Response
 from sqlalchemy import select
-import structlog
 
-from app.api.dependencies import CurrentUser, CurrentOrg, DBSession
+from app.api.dependencies import CurrentOrg, CurrentUser, DBSession
 from app.core.config import settings
-from app.models.models import Certificate, Recipient, GenerationJob, AuditAction
-from app.schemas.jobs import VerifyResponse, RevokeRequest, CertificateResponse
+from app.models.models import AuditAction, Certificate, GenerationJob, Recipient
+from app.schemas.jobs import CertificateResponse, RevokeRequest, VerifyResponse
 from app.services.audit_service import log_audit_event
 from app.services.storage import read_certificate
 
@@ -17,7 +18,7 @@ logger = structlog.get_logger(__name__)
 router = APIRouter(prefix="/certificates", tags=["Certificates"])
 
 
-@router.get("", response_model=List[CertificateResponse])
+@router.get("", response_model=list[CertificateResponse])
 async def list_certificates(
     current_user: CurrentUser,
     current_org: CurrentOrg,
@@ -202,7 +203,7 @@ async def revoke_certificate(
     db: DBSession,
 ):
     """Revoke a certificate. Records reason, actor, timestamp, and audit event."""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     cert_result = await db.execute(
         select(Certificate).where(Certificate.id == certificate_id)
@@ -226,7 +227,7 @@ async def revoke_certificate(
 
     cert.is_revoked = True
     cert.revocation_reason = request.reason
-    cert.revoked_at = datetime.now(timezone.utc)
+    cert.revoked_at = datetime.now(UTC)
     cert.revoked_by_id = current_user.id
 
     await log_audit_event(

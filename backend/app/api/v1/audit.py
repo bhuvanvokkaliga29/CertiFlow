@@ -1,14 +1,16 @@
 """Audit events and dashboard stats API."""
 
-from fastapi import APIRouter, Query
-from sqlalchemy import select, func
 import structlog
+from fastapi import APIRouter, Query
+from sqlalchemy import func, select
 
-from app.api.dependencies import CurrentUser, CurrentOrg, DBSession
-from app.models.models import AuditEvent, GenerationJob, Certificate, Recipient
+from app.api.dependencies import CurrentOrg, CurrentUser, DBSession
+from app.models.models import AuditEvent, Certificate, GenerationJob, Recipient
 from app.schemas.jobs import (
-    AuditEventResponse, PaginatedAuditResponse, DashboardStatsResponse,
+    AuditEventResponse,
+    DashboardStatsResponse,
     JobStatusResponse,
+    PaginatedAuditResponse,
 )
 
 logger = structlog.get_logger(__name__)

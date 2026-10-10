@@ -6,19 +6,15 @@ Palette: Deep navy text, warm white background, gold accents.
 
 import hashlib
 import io
-import os
+
 import qrcode
-from datetime import datetime
-from typing import Optional
+import structlog
+from PIL import Image
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4, landscape
-from reportlab.lib.units import mm, cm
-from reportlab.lib.styles import ParagraphStyle
-from reportlab.platypus import Paragraph
-from reportlab.pdfgen import canvas as pdf_canvas
+from reportlab.lib.units import mm
 from reportlab.lib.utils import ImageReader
-from PIL import Image
-import structlog
+from reportlab.pdfgen import canvas as pdf_canvas
 
 logger = structlog.get_logger(__name__)
 
@@ -80,7 +76,7 @@ def _draw_footer_band(c: pdf_canvas.Canvas) -> None:
 
 
 def _center_text(c: pdf_canvas.Canvas, y: float, text: str, font: str, size: float,
-                 color=NAVY, max_width: Optional[float] = None) -> None:
+                 color=NAVY, max_width: float | None = None) -> None:
     """Draw text centered on the page, wrapping if needed."""
     c.setFont(font, size)
     c.setFillColor(color)
@@ -121,13 +117,13 @@ def render_certificate_pdf(
     event_name: str,
     issuer_name: str,
     achievement_description: str,
-    achievement: Optional[str],
+    achievement: str | None,
     issue_date: str,
     signatory_name: str,
-    signatory_title: Optional[str],
+    signatory_title: str | None,
     certificate_id: str,
     verification_url: str,
-    recipient_institution: Optional[str] = None,
+    recipient_institution: str | None = None,
 ) -> bytes:
     """Render a premium A4 landscape certificate PDF and return bytes.
 
@@ -135,7 +131,7 @@ def render_certificate_pdf(
     Long names are scaled to fit within the layout.
     """
     # Sanitize text inputs
-    def sanitize(s: Optional[str], fallback: str = "") -> str:
+    def sanitize(s: str | None, fallback: str = "") -> str:
         if not s:
             return fallback
         # Remove control chars except newline
