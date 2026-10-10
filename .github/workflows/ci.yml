@@ -57,7 +57,7 @@ jobs:
       - name: Run Frontend Tests
         working-directory: ./frontend
         run: |
-          npx vitest run
+          npm test
 
       - name: Run Production Build
         working-directory: ./frontend
