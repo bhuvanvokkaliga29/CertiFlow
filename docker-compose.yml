@@ -1,0 +1,98 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: certiflow_db
+    environment:
+      POSTGRES_DB: certiflow
+      POSTGRES_USER: certiflow
+      POSTGRES_PASSWORD: certiflow_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U certiflow -d certiflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: certiflow_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: certiflow_api
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      APP_NAME: CertiFlow
+      APP_ENV: production
+      DATABASE_URL: postgresql+asyncpg://certiflow:certiflow_password@db:5432/certiflow
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      WORKER_MODE: celery
+      STORAGE_DIR: /app/storage
+      PUBLIC_URL: http://localhost:3000
+      SECRET_KEY: certiflow-production-secret-key-32chars-min
+      DEBUG: "False"
+      ALLOWED_CORS_ORIGINS: '["http://localhost:3000","http://localhost:5173"]'
+    volumes:
+      - cert_storage:/app/storage
+
+  worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: certiflow_worker
+    command: celery -A app.workers.tasks.celery_app worker --loglevel=info
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      APP_NAME: CertiFlow
+      APP_ENV: production
+      DATABASE_URL: postgresql+asyncpg://certiflow:certiflow_password@db:5432/certiflow
+      REDIS_URL: redis://redis:6379/0
+      CELERY_BROKER_URL: redis://redis:6379/0
+      CELERY_RESULT_BACKEND: redis://redis:6379/0
+      WORKER_MODE: celery
+      STORAGE_DIR: /app/storage
+      PUBLIC_URL: http://localhost:3000
+      SECRET_KEY: certiflow-production-secret-key-32chars-min
+      DEBUG: "False"
+    volumes:
+      - cert_storage:/app/storage
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: certiflow_frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  cert_storage:
