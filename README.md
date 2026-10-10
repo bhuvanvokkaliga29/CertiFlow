@@ -14,11 +14,7 @@ CertiFlow is a production-grade, multi-tenant credential platform architected to
 
 ---
 
-## Visual Showcase
-
-![CertiFlow Quad Frame Showcase](docs/screenshots/certiflow_showcase_quad_frame.png)
-
-### Interface Gallery
+## Interface Gallery
 
 | 01. Editorial Landing & Verifier | 02. Analytics Dashboard & Telemetry |
 | :---: | :---: |
