@@ -1,6 +1,5 @@
 # CertiFlow — Bulk Certificate Generation, Cryptographic Verification & Lifecycle Platform
 
-[![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen?style=for-the-badge&logo=github-actions)](https://github.com/bhuvanvokkaliga29/CertiFlow)
 [![Backend Tests](https://img.shields.io/badge/Pytest-34%2F34%20Passing-brightgreen?style=for-the-badge&logo=pytest)](https://github.com/bhuvanvokkaliga29/CertiFlow)
 [![Frontend Tests](https://img.shields.io/badge/Vitest-4%2F4%20Passing-brightgreen?style=for-the-badge&logo=vitest)](https://github.com/bhuvanvokkaliga29/CertiFlow)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-009688?style=for-the-badge&logo=fastapi)](https://fastapi.tiangolo.com)
