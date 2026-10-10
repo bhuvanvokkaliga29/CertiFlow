@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom';
 import React from 'react';
 import { render, screen } from '@testing-library/react';
@@ -9,6 +9,22 @@ import { AuthProvider } from '../context/AuthContext';
 import { PdfViewerModal } from '../components/common/PdfViewerModal';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { Certificate } from '../types';
+
+vi.mock('../lib/api', () => ({
+  api: {
+    get: vi.fn().mockResolvedValue({ data: new Blob(['test'], { type: 'application/pdf' }) }),
+  },
+  certsApi: {
+    getById: vi.fn(),
+    revoke: vi.fn(),
+    verifyPublic: vi.fn(),
+  },
+  jobsApi: {},
+  statsApi: {},
+  authApi: {
+    me: vi.fn().mockResolvedValue({ id: '1', name: 'Test User', email: 'test@example.com' }),
+  },
+}));
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false } },
@@ -49,7 +65,7 @@ describe('CertiFlow Frontend Tests', () => {
     expect(screen.getByRole('button', { name: /Sign In/i })).toBeDefined();
   });
 
-  it('renders PdfViewerModal correctly with certificate metadata and actions', () => {
+  it('renders PdfViewerModal correctly with certificate metadata and actions', async () => {
     const mockCert: Certificate = {
       id: 'cert-1234',
       public_id: 'CF-TEST-123',
@@ -74,7 +90,7 @@ describe('CertiFlow Frontend Tests', () => {
       />
     );
 
-    expect(screen.getByText('Test Recipient')).toBeDefined();
+    expect(await screen.findByText('Test Recipient')).toBeDefined();
     expect(screen.getByText(/CF-TEST-123/i)).toBeDefined();
     expect(screen.getByRole('button', { name: /Download PDF/i })).toBeDefined();
   });
