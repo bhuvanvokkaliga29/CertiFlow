@@ -52,6 +52,7 @@ jobs:
       - name: Install dependencies
         working-directory: ./frontend
         run: |
+          rm -f package-lock.json
           npm install --legacy-peer-deps
 
       - name: Run Frontend Tests
